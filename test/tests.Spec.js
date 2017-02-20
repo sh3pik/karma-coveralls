@@ -40,10 +40,6 @@ describe('Given the KarmaCoveralls Module', function () {
   var CoverallsReporter, mockConfig, helper, logger;
 
   beforeEach(function () {
-    mockConfig = {
-      reporters: ['coveralls', 'coverage']
-    };
-
     logger = {
       create: function () {
       }
@@ -59,10 +55,22 @@ describe('Given the KarmaCoveralls Module', function () {
 
 
   it('should throw an exception if "coveralls" does not precede "coverage" in the reporters list', function () {
+    mockConfig = {
+      reporters: ['coveralls', 'coverage']
+    };
+
     expect(CoverallsReporter.bind(this, {}, {}, logger))
       .to.throw(Error, /coverage reporter should precede coveralls/);
   });
 
+  it('should throw an exception if "coveralls" does not precede "coverage-istanbul" in the reporters list', function () {
+    mockConfig = {
+      reporters: ['coveralls', 'coverage-istanbul']
+    };
+
+    expect(CoverallsReporter.bind(this, {}, {}, logger))
+      .to.throw(Error, /coverage reporter should precede coveralls/);
+  });
 
   describe('when given the right parameters', function () {
     beforeEach(function () {
@@ -98,6 +106,21 @@ describe('Given the KarmaCoveralls Module', function () {
         reporters: [
           {type: 'lcov'}
         ]
+      };
+
+      var result = new CoverallsReporter(mockConfig, helper, logger);
+      result._onExit(function () {
+
+        expect(coverallsMock.sendToCoveralls).to.have.been.called;
+        done();
+      });
+    });
+
+
+    it('should allow using coverageIstanbulReporter.dir', function (done) {
+      mockConfig.coverageIstanbulReporter = {
+        dir: dir,
+        reporters: ['lcov']
       };
 
       var result = new CoverallsReporter(mockConfig, helper, logger);
